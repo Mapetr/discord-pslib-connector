@@ -1,5 +1,3 @@
-import {OAuth2Routes} from "discord-api-types/v10";
-
 export function getMicrosoftLoginURL(origin: string): string {
   const tenant = process.env.MSAL_TENANT_ID ?? "";
   const client_id = process.env.MSAL_CLIENT_ID ?? "";
