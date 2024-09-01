@@ -29,7 +29,7 @@ export default function RootLayout({
     </head>
     <body className={cn("min-h-screen bg-background antialiased dark", inter.className)}>
     <main className={"max-w-[77ch] pt-8 flex flex-col gap-6 mx-auto items-center text-center"}>
-      <p>Welcome to the unofficial role management app for SPŠ and VOŠ students! Sign in with your Microsoft school account and Discord to automatically receive your class role along with the "Verified" role. This system makes it easier to organize and communicate among students on our Discord server. Click the button below to sign in and get your roles!</p>
+      <p>Welcome to the unofficial role management app for SPŠ and VOŠ students! Sign in with your Microsoft school account and Discord to automatically receive your class role along with the &#34;Verified&#34; role. This system makes it easier to organize and communicate among students on our Discord server. Click the button below to sign in and get your roles!</p>
       <hr className={"w-full"} />
       {children}
       {result ? <p>{result}</p> : <></>}
