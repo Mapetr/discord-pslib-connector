@@ -171,7 +171,9 @@ export async function GET(request: Request) {
     });
     if (!result) return new Response("", {status: 500});
 
-    await sql`INSERT INTO users (microsoft, discord, className, name) VALUES (${student.MicrosoftID}, ${student.DiscordID}, ${student.Class}, ${student.Name})`;
+    await sql`INSERT INTO users (microsoft, discord, className, name) VALUES (${student.MicrosoftID}, ${student.DiscordID}, ${student.Class}, ${student.Name})`.catch(err => {
+      console.error(sessionId, err);
+    });
 
     return end("Success", false);
   }
@@ -209,7 +211,9 @@ export async function GET(request: Request) {
     return end("Something went wrong. Try again later", true)
   });
 
-  await sql`INSERT INTO users (microsoft, discord, className, name) VALUES (${student.MicrosoftID}, ${student.DiscordID}, ${student.Class}, ${student.Name})`;
+  await sql`INSERT INTO users (microsoft, discord, className, name) VALUES (${student.MicrosoftID}, ${student.DiscordID}, ${student.Class}, ${student.Name})`.catch(err => {
+    console.error(sessionId, err);
+  });
 
   return end("Success", false);
 }
