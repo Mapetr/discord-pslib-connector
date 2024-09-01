@@ -83,7 +83,7 @@ export async function GET(request: Request) {
     path: "/",
     expires: Date.now() + 24 * 60 * 60 * 1000
   });
-  kv.set(id, student).catch(err => {
+  await kv.set(id, student, {ex: 86400}).catch(err => {
     console.error(err);
   });
 
