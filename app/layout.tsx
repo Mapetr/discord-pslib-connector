@@ -19,6 +19,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+    <head>
+      <meta name="darkreader-lock"/>
+    </head>
     <body className={cn("min-h-screen bg-background antialiased dark", inter.className)}>
     <main className={"max-w-fit pt-8 flex flex-col gap-6 mx-2 md:mx-auto text-center"}>
       {children}
