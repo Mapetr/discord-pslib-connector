@@ -17,25 +17,9 @@ import {kv} from "@vercel/kv";
 import {getDiscordLoginURL} from "@/lib/urls";
 
 export async function GET(request: Request) {
-  const cookieStore = cookies();
-  const sessionId = cookieStore.get(SESSION_COOKIE_NAME);
-  if (!sessionId) return redirect("/");
-
-  const guild_id = process.env.DISCORD_GUILD_ID;
-  if (!guild_id) {
-    console.error("Missing DISCORD_GUILD_ID");
-    return new Response("", {status: 500});
-  }
-  const verified_id = process.env.DISCORD_VERIFIED_ID;
-  if (!verified_id) {
-    console.error("Missing DISCORD_VERIFIED_ID");
-    return new Response("", {status: 500});
-  }
-  const member_id = process.env.DISCORD_MEMBER_ID;
-  if (!member_id) {
-    console.error("Missing DISCORD_MEMBER_ID");
-    return new Response("", {status: 500});
-  }
+  const session = cookies().get(SESSION_COOKIE_NAME);
+  if (!session) return redirect("/");
+  const sessionId = session.value;
 
   const url = new URL(request.url);
   const request_code = url.searchParams.get("code");
@@ -43,17 +27,39 @@ export async function GET(request: Request) {
     return redirect("/");
   }
 
+  // Checking existence of env values
+  const guild_id = process.env.DISCORD_GUILD_ID;
+  if (!guild_id) {
+    console.error(sessionId, "Missing DISCORD_GUILD_ID");
+    return end("Missing data in app. Contact admin", true)
+  }
+  const verified_id = process.env.DISCORD_VERIFIED_ID;
+  if (!verified_id) {
+    console.error(sessionId, "Missing DISCORD_VERIFIED_ID");
+    return end("Missing data in app. Contact admin", true)
+  }
+  const member_id = process.env.DISCORD_MEMBER_ID;
+  if (!member_id) {
+    console.error(sessionId, "Missing DISCORD_MEMBER_ID");
+    return end("Missing data in app. Contact admin", true)
+  }
   const client_id = process.env.DISCORD_CLIENT_ID;
   if (!client_id) {
-    console.error("Missing DISCORD_CLIENT_ID");
-    return new Response("", {status: 500});
+    console.error(sessionId, "Missing DISCORD_CLIENT_ID");
+    return end("Missing data in app. Contact admin", true)
   }
   const client_secret = process.env.DISCORD_SECRET;
   if (!client_secret) {
-    console.error("Missing DISCORD_SECRET");
-    return new Response("", {status: 500});
+    console.error(sessionId, "Missing DISCORD_SECRET");
+    return end("Missing data in app. Contact admin", true)
+  }
+  const token = process.env.DISCORD_TOKEN;
+  if (!token) {
+    console.error(sessionId, "Missing DISCORD_TOKEN");
+    return end("Missing data in app. Contact admin", true)
   }
 
+  // Getting the access token for the user
   const code_body: RESTPostOAuth2AccessTokenURLEncodedData = {
     client_id: client_id,
     client_secret: client_secret,
@@ -61,7 +67,6 @@ export async function GET(request: Request) {
     code: request_code,
     redirect_uri: `${url.origin}/discord`
   };
-
   const code: RESTPostOAuth2AccessTokenResult = await fetch(OAuth2Routes.tokenURL, {
     method: "POST",
     headers: {
@@ -71,26 +76,23 @@ export async function GET(request: Request) {
   }).then(async resp => {
     const json = await resp.json();
     if (resp.status !== 200) {
-      console.error(json);
-      return null;
+      console.error(sessionId, json);
+      return end("Something went wrong. Try again later", true)
     }
     return json;
   }).catch(err => {
-    console.error(err);
-    return null;
+    console.error(sessionId, err);
+    return end("Something went wrong. Try again later", true)
   });
-  if (!code) {
-    console.error("No response from getting code");
-    return redirect(getDiscordLoginURL(url.origin));
-  }
 
-  const student = await kv.get<Student>(sessionId.value).catch(err => {
-    console.error(err);
-    return null;
+  // Getting session data from KV database
+  const student = await kv.get<Student>(sessionId).catch(err => {
+    console.error(sessionId, err);
+    return end("Something went wrong. Try again later", true)
   });
   if (!student) {
-    console.error("No student in with this session");
-    return new Response("", {status: 500});
+    cookies().delete(SESSION_COOKIE_NAME);
+    return end("Couldn't get your data. Try again", true);
   }
 
   // Get info about user
@@ -100,28 +102,19 @@ export async function GET(request: Request) {
       Authorization: `${code.token_type} ${code.access_token}`
     }
   }).then(async resp => {
+    const json = await resp.json();
     if (resp.status !== 200) {
-      console.error(await resp.json());
-      return null;
+      console.error(sessionId, json);
+      return end("Couldn't get your user data from discord.", true);
     }
-    return await resp.json();
+    return json;
   }).catch(err => {
-    console.error(err);
-    return null;
+    console.error(sessionId, err);
+    return end("Something went wrong. Try again later", true)
   });
-  if (!user) {
-    console.error("No response for user data");
-    return new Response("", {status: 500});
-  }
-
   student.DiscordID = user.id;
 
   // Setup for bot requests
-  const token = process.env.DISCORD_TOKEN;
-  if (!token) {
-    console.error("Missing DISCORD_TOKEN");
-    return new Response("", {status: 500});
-  }
   const api_headers = {
     Authorization: `Bot ${token}`,
     "User-Agent": `DiscordBot (${url.origin}, 1.0.0})`,
@@ -136,10 +129,10 @@ export async function GET(request: Request) {
     if (resp.status === 404) return null;
     return await resp.json() as RESTGetAPIGuildMemberResult;
   }).catch(err => {
-    console.error(err);
-    return null;
+    console.error(sessionId, err);
+    return end("Something went wrong. Try again later", true)
   });
-  if (member && member.roles.includes(verified_id)) return new Response("Already assigned", {status: 200});
+  if (member && member.roles.includes(verified_id)) return end("Already assigned", false);
 
   // Get guilds roles
   const guild_roles: RESTGetAPIGuildRolesResult = await fetch(RouteBases.api + Routes.guildRoles(guild_id), {
@@ -148,17 +141,17 @@ export async function GET(request: Request) {
   }).then(async resp => {
     return await resp.json();
   }).catch(err => {
-    console.error(err);
-    return null;
+    console.error(sessionId, err);
+    return end("Something went wrong. Try again later", true)
   });
-  if (!guild_roles) return new Response("", {status: 500});
+  if (!guild_roles) return end("Couldn't get data from Discord. Try again later", true)
 
   // Find the one for the class
   const class_role = guild_roles.find(value => value.name === student.Class);
   if (!class_role) {
     // TODO: Add the role if it doesnt exist
     console.error("Role for the class doesnt exist", student, guild_roles);
-    return new Response("", {status: 500});
+    return end("Couldn't set the role for you. Contant admin", true);
   }
 
   if (!member) {
@@ -172,12 +165,12 @@ export async function GET(request: Request) {
       headers: api_headers,
       body: JSON.stringify(params)
     }).catch(err => {
-      console.error(err);
-      return null;
+      console.error(sessionId, err);
+      return end("Something went wrong. Try again later", true)
     });
     if (!result) return new Response("", {status: 500});
 
-    return new Response("Joined", {status: 200});
+    return end("Success", false);
   }
 
   const regexp = new RegExp("^[PESOTL][1-4][ABCT]?$");
@@ -198,21 +191,32 @@ export async function GET(request: Request) {
   const params: RESTPatchAPIGuildMemberJSONBody = {
     roles: merged
   }
-  const result = await fetch(RouteBases.api + Routes.guildMember(guild_id, user.id), {
+  await fetch(RouteBases.api + Routes.guildMember(guild_id, user.id), {
     method: "PATCH",
     headers: api_headers,
     body: JSON.stringify(params)
   }).then(async resp => {
     if (resp.status !== 200) {
-      console.error(await resp.json());
-      return null;
+      console.error(sessionId, await resp.json());
+      return end("Couldn't add the roles. Contact admin", true);
     }
     return resp;
   }).catch(err => {
     console.error(err);
-    return null;
+    return end("Something went wrong. Try again later", true)
   });
-  if (!result) return new Response("", {status: 500});
 
-  return new Response("Assigned", {status: 200});
+  return end("Success", false);
+}
+
+// TODO: Come up with a better solution
+function end(message: string, error: boolean) {
+  cookies().set({
+    name: "result",
+    value: JSON.stringify({
+      error: error,
+      result: message
+    })
+  });
+  redirect("/");
 }

@@ -81,7 +81,6 @@ export async function GET(request: Request) {
     value: id,
     httpOnly: true,
     path: "/",
-    expires: Date.now() + 24 * 60 * 60 * 1000
   });
   await kv.set(id, student, {ex: 86400}).catch(err => {
     console.error(err);

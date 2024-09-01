@@ -5,6 +5,8 @@ import {kv} from "@vercel/kv";
 import {getDiscordLoginURL, getMicrosoftLoginURL} from "@/lib/urls";
 import {Student} from "@/lib/Student";
 import {SESSION_COOKIE_NAME} from "@/lib/utils";
+import {Button} from "@/components/ui/button";
+import Link from "next/link";
 
 export default async function Home() {
   const cookieStore = cookies();
@@ -15,6 +17,8 @@ export default async function Home() {
     session = await kv.get<Student>(sessionId.value);
   }
 
+  const {result, error} = JSON.parse(cookieStore.get("result")?.value ?? "{}");
+
   const headerList = headers();
   const url = new URL(headerList.get("x-current-path") ?? "http://localhost:3000");
 
@@ -22,7 +26,10 @@ export default async function Home() {
     const msURL= getMicrosoftLoginURL(url.origin);
     return (
       <main>
-        <a href={msURL}>Login with Microsoft AD</a>
+        {result ? <p>{result}</p> : <></>}
+        <Button asChild>
+          <Link href={msURL}>Login with Microsoft</Link>
+        </Button>
       </main>
     )
   }
@@ -31,8 +38,17 @@ export default async function Home() {
     const discordURL = getDiscordLoginURL(url.origin);
     return (
       <main>
-        <a href={discordURL}>Login with Discord</a>
+        {result ? <p>{result}</p> : <></>}
+        <Button asChild>
+          <Link href={discordURL}>Login with Discord</Link>
+        </Button>
       </main>
     )
   }
+
+  return (
+    <main>
+      <p>{result ?? "All done"}</p>
+    </main>
+  )
 }
