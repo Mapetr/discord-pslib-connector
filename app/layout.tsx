@@ -1,11 +1,10 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type {Metadata} from "next";
+import {Inter} from "next/font/google";
 import "./globals.css";
 import {cn} from "@/lib/utils";
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-sans"
 });
 
 export const metadata: Metadata = {
@@ -14,15 +13,17 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-  children,
-}: Readonly<{
+                                     children,
+                                   }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <html lang="en">
-      <body className={cn("min-h-screen bg-background font-sans antialiased dark", inter.className)}>
+    <body className={cn("min-h-screen bg-background antialiased dark", inter.className)}>
+    <main className={"max-w-fit pt-8 flex flex-col gap-6 mx-2 md:mx-auto text-center"}>
       {children}
-      </body>
+    </main>
+    </body>
     </html>
   );
 }

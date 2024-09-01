@@ -25,30 +25,30 @@ export default async function Home() {
   if (!session?.MicrosoftID) {
     const msURL= getMicrosoftLoginURL(url.origin);
     return (
-      <main>
+      <>
         {result ? <p>{result}</p> : <></>}
-        <Button asChild>
+        <Button className={""} asChild>
           <Link href={msURL}>Login with Microsoft</Link>
         </Button>
-      </main>
+      </>
     )
   }
 
   if (!session?.DiscordID) {
     const discordURL = getDiscordLoginURL(url.origin);
     return (
-      <main>
+      <>
         {result ? <p>{result}</p> : <></>}
-        <Button asChild>
+        <Button className={"max-w-fit"} asChild>
           <Link href={discordURL}>Login with Discord</Link>
         </Button>
-      </main>
+      </>
     )
   }
 
   return (
-    <main>
+    <>
       <p>{result ?? "All done"}</p>
-    </main>
+    </>
   )
 }
