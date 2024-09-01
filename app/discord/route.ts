@@ -15,6 +15,7 @@ import {SESSION_COOKIE_NAME} from "@/lib/utils";
 import {Student} from "@/lib/Student";
 import {kv} from "@vercel/kv";
 import {getDiscordLoginURL} from "@/lib/urls";
+import {sql} from "@vercel/postgres";
 
 export async function GET(request: Request) {
   const session = cookies().get(SESSION_COOKIE_NAME);
@@ -170,6 +171,8 @@ export async function GET(request: Request) {
     });
     if (!result) return new Response("", {status: 500});
 
+    await sql`INSERT INTO users (microsoft, discord, className, name) VALUES (${student.MicrosoftID}, ${student.DiscordID}, ${student.Class}, ${student.Name})`;
+
     return end("Success", false);
   }
 
@@ -205,6 +208,8 @@ export async function GET(request: Request) {
     console.error(err);
     return end("Something went wrong. Try again later", true)
   });
+
+  await sql`INSERT INTO users (microsoft, discord, className, name) VALUES (${student.MicrosoftID}, ${student.DiscordID}, ${student.Class}, ${student.Name})`;
 
   return end("Success", false);
 }

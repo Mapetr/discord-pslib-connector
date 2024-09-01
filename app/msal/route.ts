@@ -65,6 +65,10 @@ export async function GET(request: Request) {
   });
   if (!profile) return redirect("/");
 
+  if (profile.jobTitle !== "student") {
+    console.log("Unexpected job title", profile);
+  }
+
   const name = profile.displayName.split(" ");
   name.pop();
 
