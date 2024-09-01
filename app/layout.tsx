@@ -2,6 +2,8 @@ import type {Metadata} from "next";
 import {Inter} from "next/font/google";
 import "./globals.css";
 import {cn} from "@/lib/utils";
+import {Analytics} from "@vercel/analytics/next";
+import {SpeedInsights} from "@vercel/speed-insights/next";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,6 +27,8 @@ export default function RootLayout({
     <body className={cn("min-h-screen bg-background antialiased dark", inter.className)}>
     <main className={"max-w-fit pt-8 flex flex-col gap-6 mx-2 md:mx-auto text-center"}>
       {children}
+      <Analytics />
+      <SpeedInsights />
     </main>
     </body>
     </html>
