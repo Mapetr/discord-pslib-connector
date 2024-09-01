@@ -4,8 +4,16 @@ import {
   RESTPostOAuth2AccessTokenResult,
   RESTPostOAuth2AccessTokenURLEncodedData,
 } from "discord-api-types/v10";
+import {cookies} from "next/headers";
+import {SESSION_COOKIE_NAME} from "@/lib/utils";
+import {Student} from "@/lib/Student";
+import {kv} from "@vercel/kv";
 
 export async function GET(request: Request) {
+  const cookieStore = cookies();
+  const sessionId = cookieStore.get(SESSION_COOKIE_NAME);
+  if (!sessionId) return redirect("/");
+
   const url = new URL(request.url);
   const request_code = url.searchParams.get("code");
   if (!request_code) {
@@ -42,4 +50,14 @@ export async function GET(request: Request) {
     console.error("No response from getting code");
     return new Response("", {status: 500});
   }
+
+  const session = await kv.get<Student>(sessionId.value).catch(err => {
+    console.error(err);
+    return null;
+  });
+  if (!session) {
+    return new Response("", {status: 500});
+  }
+
+
 }
