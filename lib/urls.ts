@@ -11,5 +11,5 @@ export function getMicrosoftLoginURL(origin: string): string {
 export function getDiscordLoginURL(origin: string): string {
   const client_id = process.env.DISCORD_CLIENT_ID ?? "";
   if (!client_id) console.error("Missing DISCORD_CLIENT_ID");
-  return `${OAuth2Routes.authorizationURL}?response_type=code&client_id=${client_id}&scope=identify%20guild.join&redirect_uri=${encodeURIComponent(origin)}%2Fdiscord&prompt=consent`
+  return `https://discord.com/oauth2/authorize?response_type=code&client_id=${client_id}&scope=identify%20guilds.join&redirect_uri=${encodeURIComponent(origin)}%2Fdiscord&prompt=consent`
 }
