@@ -174,6 +174,9 @@ export async function GET(request: Request) {
     await sql`INSERT INTO users (microsoft, discord, className, name) VALUES (${student.MicrosoftID}, ${student.DiscordID}, ${student.Class}, ${student.Name})`.catch(err => {
       console.error(sessionId, err);
     });
+    await kv.set(sessionId, student, {ex: 86400}).catch(err => {
+      console.error(err);
+    });
 
     return end("Success", false);
   }
@@ -213,6 +216,9 @@ export async function GET(request: Request) {
 
   await sql`INSERT INTO users (microsoft, discord, className, name) VALUES (${student.MicrosoftID}, ${student.DiscordID}, ${student.Class}, ${student.Name})`.catch(err => {
     console.error(sessionId, err);
+  });
+  await kv.set(sessionId, student, {ex: 86400}).catch(err => {
+    console.error(err);
   });
 
   return end("Success", false);
