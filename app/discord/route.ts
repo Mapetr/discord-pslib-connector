@@ -139,7 +139,7 @@ export async function GET(request: Request) {
     console.error(err);
     return null;
   });
-  if (member) if (member.roles.includes(verified_id)) return new Response("Already verified", {status: 204});
+  if (member && member.roles.includes(verified_id)) return new Response("Already assigned", {status: 200});
 
   // Get guilds roles
   const guild_roles: RESTGetAPIGuildRolesResult = await fetch(RouteBases.api + Routes.guildRoles(guild_id), {
