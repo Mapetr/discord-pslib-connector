@@ -20,6 +20,10 @@ silent: !process.env.CI,
 // For all available options, see:
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
+release: {
+    finalize: false
+},
+
 // Upload a larger set of source maps for prettier stack traces (increases build time)
 widenClientFileUpload: true,
 
