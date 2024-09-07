@@ -12,20 +12,17 @@ export async function GET(request: Request) {
 
   const tenant = process.env.MSAL_TENANT_ID;
   if (!tenant) {
-    console.error("Missing MSAL_TENANT_ID");
-    return redirect("/");
+    throw new Error("Missing MSAL_TENANT_ID");
   }
 
   const client_id = process.env.MSAL_CLIENT_ID;
   if (!client_id) {
-    console.error("Missing MSAL_CLIENT_ID");
-    return redirect("/");
+    throw new Error("Missing MSAL_CLIENT_ID");
   }
 
   const client_secret = process.env.MSAL_CLIENT_SECRET;
   if (!client_secret) {
-    console.error("Missing MSAL_CLIENT_SECRET");
-    return redirect("/");
+    throw new Error("Missing MSAL_CLIENT_SECRET");
   }
 
   const request_body = {
@@ -47,8 +44,7 @@ export async function GET(request: Request) {
     if (resp.status !== 200) return null;
     return await resp.json()
   }).catch(err => {
-    console.error(err);
-    return null;
+    throw new Error(err);
   });
   if (!resp) return redirect("/");
 
@@ -60,8 +56,7 @@ export async function GET(request: Request) {
     if (resp.status !== 200) return null;
     return await resp.json();
   }).catch(err => {
-    console.error(err);
-    return null;
+    throw new Error(err);
   });
   if (!profile) return redirect("/");
 
@@ -87,7 +82,7 @@ export async function GET(request: Request) {
     path: "/",
   });
   await kv.set(id, student, {ex: 86400}).catch(err => {
-    console.error(err);
+    throw new Error(err);
   });
 
   return redirect("/");
