@@ -208,7 +208,7 @@ export async function GET(request: Request) {
 
 // TODO: Come up with a better solution
 function end(message: string, error: boolean) {
-  if (!error) return redirect("https://discord.gg/sEMZXTgvKh");
+  if (!error) return redirect("https://discord.gg/Hx673v68Cf");
   cookies().set({
     name: "result",
     value: JSON.stringify({
