@@ -10,9 +10,8 @@ export default withSentryConfig(nextConfig, {
 // For all available options, see:
 // https://github.com/getsentry/sentry-webpack-plugin#options
 
-org: "discord-ms-connector",
-project: "discord-ms-connector",
-sentryUrl: "https://glitch.ayai.dev/",
+org: "discord-ty9",
+project: "discord-web",
 
 // Only print logs for uploading source maps in CI
 silent: !process.env.CI,
