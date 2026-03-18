@@ -13,7 +13,7 @@ import {
 import {cookies} from "next/headers";
 import {SESSION_COOKIE_NAME} from "@/lib/utils";
 import {Student} from "@/lib/Student";
-import {kv} from "@vercel/kv";
+import {redis} from "@/lib/redis";
 import {sql} from "@vercel/postgres";
 
 export async function GET(request: Request) {
@@ -78,9 +78,10 @@ export async function GET(request: Request) {
   });
 
   // Getting session data from KV database
-  const student = await kv.get<Student>(sessionId).catch(err => {
+  const studentData = await redis.get(sessionId).catch(err => {
     throw new Error(sessionId, err);
   });
+  const student: Student | null = studentData ? JSON.parse(studentData) : null;
   if (!student) {
     cookies().delete(SESSION_COOKIE_NAME);
     return end("Couldn't get your data. Try again", true);
@@ -158,7 +159,7 @@ export async function GET(request: Request) {
     await sql`INSERT INTO users (microsoft, discord, className, name) VALUES (${student.MicrosoftID}, ${student.DiscordID}, ${student.Class}, ${student.Name})`.catch(err => {
       throw new Error(sessionId, err);
     });
-    await kv.set(sessionId, student, {ex: 86400}).catch(err => {
+    await redis.set(sessionId, JSON.stringify(student), "EX", 86400).catch(err => {
       throw new Error(err);
     });
 
@@ -199,7 +200,7 @@ export async function GET(request: Request) {
   await sql`INSERT INTO users (microsoft, discord, className, name) VALUES (${student.MicrosoftID}, ${student.DiscordID}, ${student.Class}, ${student.Name})`.catch(err => {
     throw new Error(sessionId, err);
   });
-  await kv.set(sessionId, student, {ex: 86400}).catch(err => {
+  await redis.set(sessionId, JSON.stringify(student), "EX", 86400).catch(err => {
     throw new Error(err);
   });
 
