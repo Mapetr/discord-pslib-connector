@@ -15,12 +15,12 @@ export const metadata: Metadata = {
   description: "Login with Microsoft account to Discord",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
                                      children,
                                    }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const {result, error} = JSON.parse(cookies().get("result")?.value ?? "{}");
+  const {result, error} = JSON.parse((await cookies()).get("result")?.value ?? "{}");
 
   return (
     <html lang="en">

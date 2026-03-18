@@ -9,7 +9,7 @@ import {Button} from "@/components/ui/button";
 import Link from "next/link";
 
 export default async function Home() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const sessionId = cookieStore.get(SESSION_COOKIE_NAME);
   let session: Student | null = null;
 
@@ -17,7 +17,7 @@ export default async function Home() {
     session = await kv.get<Student>(sessionId.value);
   }
 
-  const headerList = headers();
+  const headerList = await headers();
   const url = new URL(headerList.get("x-current-path") ?? "http://localhost:3000");
 
   if (!session || !session.MicrosoftID) {

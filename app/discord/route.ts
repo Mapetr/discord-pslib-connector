@@ -17,7 +17,7 @@ import {kv} from "@vercel/kv";
 import {sql} from "@vercel/postgres";
 
 export async function GET(request: Request) {
-  const session = cookies().get(SESSION_COOKIE_NAME);
+  const session = (await cookies()).get(SESSION_COOKIE_NAME);
   if (!session) return redirect("/");
   const sessionId = session.value;
 
@@ -82,8 +82,8 @@ export async function GET(request: Request) {
     throw new Error(sessionId, err);
   });
   if (!student) {
-    cookies().delete(SESSION_COOKIE_NAME);
-    return end("Couldn't get your data. Try again", true);
+    (await cookies()).delete(SESSION_COOKIE_NAME);
+    return await end("Couldn't get your data. Try again", true);
   }
 
   // Get info about user
@@ -120,7 +120,7 @@ export async function GET(request: Request) {
   }).catch(err => {
     throw new Error(sessionId, err);
   });
-  if (member && member.roles.includes(verified_id)) return end("Already assigned", false);
+  if (member && member.roles.includes(verified_id)) return await end("Already assigned", false);
 
   // Get guilds roles
   const guild_roles: RESTGetAPIGuildRolesResult = await fetch(RouteBases.api + Routes.guildRoles(guild_id), {
@@ -131,7 +131,7 @@ export async function GET(request: Request) {
   }).catch(err => {
     throw new Error(sessionId, err);
   });
-  if (!guild_roles) return end("Couldn't get data from Discord. Try again later", true)
+  if (!guild_roles) return await end("Couldn't get data from Discord. Try again later", true)
 
   // Find the one for the class
   const class_role = guild_roles.find(value => value.name === student.Class);
@@ -162,7 +162,7 @@ export async function GET(request: Request) {
       throw new Error(err);
     });
 
-    return end("Success", false);
+    return await end("Success", false);
   }
 
   const regexp = new RegExp("^[PESOTL][1-4][ABCT]?$");
@@ -203,13 +203,13 @@ export async function GET(request: Request) {
     throw new Error(err);
   });
 
-  return end("Success", false);
+  return await end("Success", false);
 }
 
 // TODO: Come up with a better solution
-function end(message: string, error: boolean) {
+async function end(message: string, error: boolean) {
   if (!error) return redirect("https://discord.gg/Hx673v68Cf");
-  cookies().set({
+  (await cookies()).set({
     name: "result",
     value: JSON.stringify({
       error: error,
