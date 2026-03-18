@@ -1,7 +1,7 @@
 "use server"
 
 import {cookies, headers} from "next/headers";
-import {kv} from "@vercel/kv";
+import {redis} from "@/lib/redis";
 import {getDiscordLoginURL, getMicrosoftLoginURL} from "@/lib/urls";
 import {Student} from "@/lib/Student";
 import {SESSION_COOKIE_NAME} from "@/lib/utils";
@@ -14,7 +14,8 @@ export default async function Home() {
   let session: Student | null = null;
 
   if (sessionId) {
-    session = await kv.get<Student>(sessionId.value);
+    const data = await redis.get(sessionId.value);
+    session = data ? JSON.parse(data) : null;
   }
 
   const headerList = await headers();

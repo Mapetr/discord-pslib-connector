@@ -1,7 +1,7 @@
 import {redirect} from "next/navigation";
 import {getClassName, Student} from "@/lib/Student";
 import {randomUUID} from "node:crypto";
-import {kv} from "@vercel/kv";
+import {redis} from "@/lib/redis";
 import {cookies} from "next/headers";
 import {SESSION_COOKIE_NAME} from "@/lib/utils";
 
@@ -81,7 +81,7 @@ export async function GET(request: Request) {
     httpOnly: true,
     path: "/",
   });
-  await kv.set(id, student, {ex: 86400}).catch(err => {
+  await redis.set(id, JSON.stringify(student), "EX", 86400).catch(err => {
     throw new Error(err);
   });
 
