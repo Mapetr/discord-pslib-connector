@@ -75,7 +75,7 @@ export async function GET(request: Request) {
   }
 
   const id = randomUUID();
-  cookies().set({
+  (await cookies()).set({
     name: SESSION_COOKIE_NAME,
     value: id,
     httpOnly: true,
